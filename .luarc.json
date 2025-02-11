@@ -1,0 +1,7 @@
+{
+    "diagnostics.globals": [
+        "import",
+        "playdate"
+    ],
+    "runtime.version": "Lua 5.4"
+}
