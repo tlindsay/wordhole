@@ -15,19 +15,38 @@ import "CoreLibs/timer"
 -- NOTE: Because it's local, you'll have to do it in every .lua source file.
 
 local gfx <const> = playdate.graphics
-
--- Here's our player sprite declaration. We'll scope it to this file because
--- several functions need to access it.
-
-local playerSprite = nil
+local display <const> = playdate.display
 
 -- A function to set up our game environment.
 
+local function drawRingText(txt, x, y, rot)
+	local l = txt:gsub("%s", ""):len()
+	local fontSize = gfx.getFont(gfx.kVariantNormal):getHeight()
+	for i = 1, l do
+		local c = txt:gsub("%s", ""):sub(i, i)
+		local r = 64
+		local cx = math.cos(math.rad((360 / l) * (i - 1)) + (i * rot)) * r
+		local cy = math.sin(math.rad((360 / l) * (i - 1)) + (i * rot)) * r
+		gfx.drawText(c, x + cx - fontSize / 2, y + cy - fontSize / 2)
+	end
+end
+
+local txt = "HELLO FRIEND"
 local function myGameSetUp()
-	-- Set up the player sprite.
+	local w, h = display.getSize()
+	local pad = 64
+	local x, y, r = w / 2, h / 2, (h / 2) - pad
+
+	local fontAlphaOne <const> = gfx.font.new("fonts/AlphaOne.pft")
+	local fontSize <const> = 8
 	gfx.setImageDrawMode(gfx.kDrawModeNXOR)
-	gfx.setFont(gfx.getFont("bold"))
-	gfx.drawTextAligned("Hey there, world!", 200, 120 - 8 / 2, kTextAlignment.center)
+	gfx.setFont(fontAlphaOne)
+
+	-- gfx.drawTextAligned(txt, x, y - (fontSize / 2), kTextAlignment.center)
+
+	drawRingText(txt, x, y, 0)
+
+	-- gfx.drawCircleAtPoint(x, y, r)
 end
 
 -- Now we'll call the function above to configure our game.
@@ -41,27 +60,15 @@ myGameSetUp()
 -- Use this function to poll input, run game logic, and move sprites.
 
 function playdate.update()
-	if playerSprite == nil then
-		return
-	end
+	playdate.drawFPS(0, 0)
+	gfx.clear()
 
-	-- Poll the d-pad and move our player accordingly.
-	-- (There are multiple ways to read the d-pad; this is the simplest.)
-	-- Note that it is possible for more than one of these directions
-	-- to be pressed at once, if the user is pressing diagonally.
+	local w, h = display.getSize()
+	local pad = 60
+	local x, y, r = w / 2, h / 2, (h / 2) - pad
 
-	if playdate.buttonIsPressed(playdate.kButtonUp) then
-		playerSprite:moveBy(0, -2)
-	end
-	if playdate.buttonIsPressed(playdate.kButtonRight) then
-		playerSprite:moveBy(2, 0)
-	end
-	if playdate.buttonIsPressed(playdate.kButtonDown) then
-		playerSprite:moveBy(0, 2)
-	end
-	if playdate.buttonIsPressed(playdate.kButtonLeft) then
-		playerSprite:moveBy(-2, 0)
-	end
+	local rot = playdate.getCrankPosition()
+	drawRingText(txt, x, y, rot)
 
 	-- Call the functions below in playdate.update() to draw sprites and keep
 	-- timers updated. (We aren't using timers in this example, but in most
