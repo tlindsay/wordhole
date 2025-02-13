@@ -1,7 +1,21 @@
 {
-    "diagnostics.globals": [
-        "import",
-        "playdate"
-    ],
-    "runtime.version": "Lua 5.4"
+    "$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
+    "diagnostics.globals": ["import", "playdate"],
+    "diagnostics.severity": {
+        "duplicate-set-field": "Hint"
+    },
+    "format.defaultConfig": {
+        "indent_style": "space",
+        "indent_size": 2
+    },
+    "runtime.builtin": {
+        "io": "disable",
+        "os": "disable",
+        "package": "disable"
+    },
+    "runtime.nonstandardSymbol": ["+=", "-=", "*=", "/=", "//=", "%=", "<<=", ">>=", "&=", "|=", "^="],
+    "runtime.version": "Lua 5.4",
+    "workspace.library": [
+        "~/Developer/PlaydateSDK/CoreLibs/"
+    ]
 }

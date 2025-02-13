@@ -2,7 +2,7 @@ root = "."
 testdata_dir = "testdata"
 
 [build]
-  bin = "/usr/local/bin/pdc source/main.lua build/Wordhole.pdx"
+  full_bin = "just reload"
   cmd = "/usr/bin/true"
   delay = 1000
   include_ext = ["lua"]
