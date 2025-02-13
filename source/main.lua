@@ -8,6 +8,7 @@ import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
+import "./math"
 
 -- Declaring this "gfx" shorthand will make your life easier. Instead of having
 -- to preface all graphics calls with "playdate.graphics", just use "gfx."
@@ -16,6 +17,8 @@ import "CoreLibs/timer"
 
 local gfx <const> = playdate.graphics
 local display <const> = playdate.display
+local fontAlphaOne <const> = gfx.font.new("fonts/AlphaOne.pft")
+local fontSize <const> = 8
 
 -- A function to set up our game environment.
 
@@ -25,28 +28,33 @@ local function drawRingText(txt, x, y, rot)
 	for i = 1, l do
 		local c = txt:gsub("%s", ""):sub(i, i)
 		local r = 64
-		local cx = math.cos(math.rad((360 / l) * (i - 1)) + (i * rot)) * r
-		local cy = math.sin(math.rad((360 / l) * (i - 1)) + (i * rot)) * r
-		gfx.drawText(c, x + cx - fontSize / 2, y + cy - fontSize / 2)
+		-- (360 / 1) * 0 + (360 - (1 * 90))
+		local rad = (360 / l) * (i - 1)
+		local cx = math.cos(math.rad(rot)) * r
+		local cy = math.sin(math.rad(rot)) * r
+		print("cx", cx, "cy", cy)
+		cx += (fontSize / 2) * math.sign(cx)
+		cy += (fontSize / 2) * math.sign(cy)
+		print("cx", cx, "cy", cy)
+		-- local cx = math.cos(math.rad((360 / l) * (i - 1)) + (360 - (i * rot))) * r
+		-- local cy = math.sin(math.rad((360 / l) * (i - 1)) + (360 - (i * rot))) * r
+		gfx.drawText(c, x + cx, y + cy)
 	end
 end
 
-local txt = "HELLO FRIEND"
+local txt = "H"
+local sprites = {}
 local function myGameSetUp()
 	local w, h = display.getSize()
 	local pad = 64
 	local x, y, r = w / 2, h / 2, (h / 2) - pad
 
-	local fontAlphaOne <const> = gfx.font.new("fonts/AlphaOne.pft")
-	local fontSize <const> = 8
 	gfx.setImageDrawMode(gfx.kDrawModeNXOR)
 	gfx.setFont(fontAlphaOne)
 
 	-- gfx.drawTextAligned(txt, x, y - (fontSize / 2), kTextAlignment.center)
 
 	drawRingText(txt, x, y, 0)
-
-	-- gfx.drawCircleAtPoint(x, y, r)
 end
 
 -- Now we'll call the function above to configure our game.
@@ -60,14 +68,15 @@ myGameSetUp()
 -- Use this function to poll input, run game logic, and move sprites.
 
 function playdate.update()
-	playdate.drawFPS(0, 0)
 	gfx.clear()
+	playdate.drawFPS(0, 0)
 
 	local w, h = display.getSize()
 	local pad = 60
 	local x, y, r = w / 2, h / 2, (h / 2) - pad
+	gfx.drawCircleAtPoint(x, y, r)
 
-	local rot = playdate.getCrankPosition()
+	local rot = playdate.getCrankPosition() - 90
 	drawRingText(txt, x, y, rot)
 
 	-- Call the functions below in playdate.update() to draw sprites and keep
