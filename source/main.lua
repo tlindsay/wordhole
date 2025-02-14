@@ -24,21 +24,18 @@ local fontAlphaOne <const> = gfx.font.new("fonts/AlphaOne.pft")
 local fontSize <const> = 8
 local w, h = display.getSize()
 local centerX, centerY = w / 2, h / 2
-local r = 64
+local r = 96
 
-local txt = "an arbitrarily long string"
----@type table<pd_sprite>
-local sprites = {}
+---@type table<Ring>
+local rings = {}
 local function myGameSetUp()
 	gfx.setImageDrawMode(gfx.kDrawModeInverted)
 	gfx.setFont(fontAlphaOne)
-	local chars = txt:gsub("%s", ""):upper()
-	for i = 1, #chars do
-		local sp = Letter(chars:sub(i, i))
-		sp:add()
-		table.insert(sprites, #sprites + 1, sp)
-	end
-	printTable(sprites)
+	rings = {
+		Ring("abcdefghjkmnopqrstuvwxyz", r),
+		Ring("patricklindsay", r * 2 / 3),
+		Ring("patrick", r / 3)
+	}
 end
 
 myGameSetUp()
@@ -52,10 +49,8 @@ function playdate.update()
 	end
 
 	local crankPosition = playdate.getCrankPosition() - 90
-	for i, sp in ipairs(sprites) do
-		local rot = math.rad(crankPosition + (360 / #sprites * i))
-		local x, y = math.cos(rot) * r, math.sin(rot) * r
-		sp:moveTo(centerX + x, centerY + y)
+	for _, ring in pairs(rings) do
+		ring:draw(crankPosition)
 	end
 
 	gfx.sprite.update()
