@@ -7,8 +7,11 @@
 import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/sprites"
+import "CoreLibs/ui"
 import "CoreLibs/timer"
+
 import "./math"
+import "./letter"
 
 -- Declaring this "gfx" shorthand will make your life easier. Instead of having
 -- to preface all graphics calls with "playdate.graphics", just use "gfx."
@@ -19,69 +22,41 @@ local gfx <const> = playdate.graphics
 local display <const> = playdate.display
 local fontAlphaOne <const> = gfx.font.new("fonts/AlphaOne.pft")
 local fontSize <const> = 8
+local w, h = display.getSize()
+local centerX, centerY = w / 2, h / 2
+local r = 64
 
--- A function to set up our game environment.
-
-local function drawRingText(txt, x, y, rot)
-	local l = txt:gsub("%s", ""):len()
-	local fontSize = gfx.getFont(gfx.kVariantNormal):getHeight()
-	for i = 1, l do
-		local c = txt:gsub("%s", ""):sub(i, i)
-		local r = 64
-		-- (360 / 1) * 0 + (360 - (1 * 90))
-		local rad = (360 / l) * (i - 1)
-		local cx = math.cos(math.rad(rot)) * r
-		local cy = math.sin(math.rad(rot)) * r
-		print("cx", cx, "cy", cy)
-		cx += (fontSize / 2) * math.sign(cx)
-		cy += (fontSize / 2) * math.sign(cy)
-		print("cx", cx, "cy", cy)
-		-- local cx = math.cos(math.rad((360 / l) * (i - 1)) + (360 - (i * rot))) * r
-		-- local cy = math.sin(math.rad((360 / l) * (i - 1)) + (360 - (i * rot))) * r
-		gfx.drawText(c, x + cx, y + cy)
-	end
-end
-
-local txt = "H"
+local txt = "an arbitrarily long string"
+---@type table<pd_sprite>
 local sprites = {}
 local function myGameSetUp()
-	local w, h = display.getSize()
-	local pad = 64
-	local x, y, r = w / 2, h / 2, (h / 2) - pad
-
-	gfx.setImageDrawMode(gfx.kDrawModeNXOR)
+	gfx.setImageDrawMode(gfx.kDrawModeInverted)
 	gfx.setFont(fontAlphaOne)
-
-	-- gfx.drawTextAligned(txt, x, y - (fontSize / 2), kTextAlignment.center)
-
-	drawRingText(txt, x, y, 0)
+	local chars = txt:gsub("%s", ""):upper()
+	for i = 1, #chars do
+		local sp = Letter(chars:sub(i, i))
+		sp:add()
+		table.insert(sprites, #sprites + 1, sp)
+	end
+	printTable(sprites)
 end
 
--- Now we'll call the function above to configure our game.
--- After this runs (it just runs once), nearly everything will be
--- controlled by the OS calling `playdate.update()` 30 times a second.
-
 myGameSetUp()
-
--- `playdate.update()` is the heart of every Playdate game.
--- This function is called right before every frame is drawn onscreen.
--- Use this function to poll input, run game logic, and move sprites.
 
 function playdate.update()
 	gfx.clear()
 	playdate.drawFPS(0, 0)
 
-	local w, h = display.getSize()
-	local pad = 60
-	local x, y, r = w / 2, h / 2, (h / 2) - pad
-	gfx.drawCircleAtPoint(x, y, r)
+	if playdate.isCrankDocked() then
+		playdate.ui.crankIndicator:draw()
+	end
 
-	local rot = playdate.getCrankPosition() - 90
-	drawRingText(txt, x, y, rot)
-
-	-- Call the functions below in playdate.update() to draw sprites and keep
-	-- timers updated. (We aren't using timers in this example, but in most
-	-- average-complexity games, you will.)
+	local crankPosition = playdate.getCrankPosition() - 90
+	for i, sp in ipairs(sprites) do
+		local rot = math.rad(crankPosition + (360 / #sprites * i))
+		local x, y = math.cos(rot) * r, math.sin(rot) * r
+		sp:moveTo(centerX + x, centerY + y)
+	end
 
 	gfx.sprite.update()
 	playdate.timer.updateTimers()
